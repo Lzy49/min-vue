@@ -6,9 +6,6 @@
   "directories": {
     "doc": "doc"
   },
-  "script": {
-    "commit": "cz"
-  },
   "config": {
     "commitizen": {
       "path": "cz-conventional-changelog"
@@ -34,6 +31,7 @@
     "jest": "^27.5.1"
   },
   "scripts": {
-    "prepare": "husky install"
+    "prepare": "husky install",
+    "commit": "cz"
   }
 }
