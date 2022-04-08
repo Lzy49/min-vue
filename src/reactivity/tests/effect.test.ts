@@ -1,5 +1,5 @@
 import { reactive } from '../reactive'
-import { effect } from '../effect'
+import { effect, stop } from '../effect'
 describe('effect', () => {
   test('happy path', () => {
     // 初始化
@@ -52,5 +52,35 @@ describe('effect', () => {
     expect(scheduler).toHaveBeenCalledTimes(1)
     expect(dummy).toBe(1)
     run();
+  })
+  test('stop', () => {
+    let dummy;
+    const obj = reactive({ prop: 1 })
+    const runner = effect(() => {
+      dummy = obj.prop + 1
+    })
+    obj.prop = 2;
+    expect(dummy).toBe(3)
+    stop(runner)
+    obj.prop = 3;
+    expect(dummy).not.toBe(4)
+    runner()
+    expect(dummy).toBe(4)
+  })
+  test('onstop', () => {
+    let obj = reactive({
+      foo: 1
+    });
+    const onStop = jest.fn();
+    let dummy;
+    const runner = effect(
+      () => {
+        dummy = obj.prop + 1
+      }, {
+        onStop
+      }
+    )
+    stop(runner)
+    expect(onStop).toHaveBeenCalledTimes(1)
   })
 })
