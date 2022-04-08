@@ -1,7 +1,15 @@
 import { track, trigger } from './effect'
+import { ReactiveFlags } from './reactive'
 //  抽离创建 getter 和 setter 的函数
 const createGetter = (isReadonly: boolean = false) => {
   return (target: object, key: any) => {
+    // isReactive 和 isReadonly 实现
+    if (key === ReactiveFlags.IS_REACTIVE) {
+      return !isReadonly
+    } else if (key === ReactiveFlags.IS_READONLY) {
+      return isReadonly
+    }
+    // 区分 readonly 和 reactive 
     if (!isReadonly) {
       track(target, key)
     }
