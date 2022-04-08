@@ -9,4 +9,9 @@ describe('reactive', () => {
     expect(isReactive(original)).toBe(false)
     expect(isReactive(observed)).toBe(true)
   })
+  test('nested reactive', () => {
+    const original = reactive({ foo: 1, bar: { bar: 2 } })
+    expect(isReactive(original)).toBe(true)
+    expect(isReactive(original.bar)).toBe(true)
+  })
 })

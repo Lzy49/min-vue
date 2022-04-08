@@ -7,6 +7,7 @@ describe('readonly', () => {
     expect(wrapped.bar.foo).toBe(1)
     expect(isReadonly(wrapped)).toBe(true)
     expect(isReadonly(raw)).toBe(false)
+    expect(isReadonly(wrapped.bar)).toBe(true)
   })
   test('warn then call set', () => {
     console.warn = jest.fn(); // 创建为 jest fn 函数
