@@ -1,8 +1,8 @@
 import { track, trigger } from './effect'
 import { reactive, ReactiveFlags, readonly } from './reactive'
-import { isObject } from '../shared/index'
+import { isObject, extend } from '../shared/index'
 //  抽离创建 getter 和 setter 的函数
-const createGetter = (isReadonly: boolean = false) => {
+const createGetter = (isReadonly: boolean = false, isShallow: boolean = false) => {
   return (target: object, key: any) => {
 
     // isReactive 和 isReadonly 实现
@@ -13,7 +13,13 @@ const createGetter = (isReadonly: boolean = false) => {
     }
 
     const res = Reflect.get(target, key);
-    
+
+
+    if (isShallow) {
+      // 如果是 shallow 只对第一层做设置，内层不做设置
+      return res
+    }
+
     // 当遇到值是对象时要对其进行深入嵌套
     if (isObject(res)) {
       return isReadonly ? readonly(res) : reactive(res)
@@ -24,7 +30,6 @@ const createGetter = (isReadonly: boolean = false) => {
     if (!isReadonly) {
       track(target, key)
     }
-
 
     return res
   }
@@ -54,3 +59,6 @@ export const readonlyHandler = {
     return true
   }
 }
+export const shallowReadonlyHandler = extend({}, readonlyHandler, {
+  get: createGetter(true, true)
+})

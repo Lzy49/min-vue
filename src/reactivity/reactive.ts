@@ -1,5 +1,5 @@
 
-import { reactiveHandler, readonlyHandler } from './baceHandlers'
+import { reactiveHandler, readonlyHandler, shallowReadonlyHandler } from './baceHandlers'
 export const ReactiveFlags = {
   IS_REACTIVE: Symbol(),
   IS_READONLY: Symbol(),
@@ -10,6 +10,10 @@ export const reactive = (raw: any) => {
 export const readonly = (raw: any) => {
   return new Proxy(raw, readonlyHandler)
 }
+export const shallowReadonly = (raw: any) => {
+  return new Proxy(raw, shallowReadonlyHandler)
+}
+
 export const isReadonly = (value: any) => {
   return !!value[ReactiveFlags.IS_READONLY]
 }
