@@ -1,4 +1,4 @@
-import { isReadonly, readonly } from '../reactive'
+import { isReadonly, readonly, isProxy } from '../reactive'
 describe('readonly', () => {
   test('happy path', () => {
     const raw = { foo: 1, bar: { foo: 1 } }
@@ -8,6 +8,7 @@ describe('readonly', () => {
     expect(isReadonly(wrapped)).toBe(true)
     expect(isReadonly(raw)).toBe(false)
     expect(isReadonly(wrapped.bar)).toBe(true)
+    expect(isProxy(wrapped)).toBe(true)
   })
   test('warn then call set', () => {
     console.warn = jest.fn(); // 创建为 jest fn 函数
