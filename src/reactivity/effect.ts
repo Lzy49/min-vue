@@ -61,6 +61,10 @@ export const track = (target: object, key: string | symbol) => {
     dep = new Set();
     depMap.set(key, dep)
   }
+  trackEffect(dep)
+}
+export const trackEffect = (dep) => {
+  
   // 判断是否存在，存在则不再收集 
   if (dep.has(activeEffect)) {
     return
@@ -70,10 +74,14 @@ export const track = (target: object, key: string | symbol) => {
   // 收集 添加 activeEffect 的 依赖的对象
   activeEffect.deps.push(dep);
 }
-const isTreaking = () => activeEffect !== undefined && shouldTreck 
+export const isTreaking = () => activeEffect !== undefined && shouldTreck
+
 export const trigger = (target: object, key: string | symbol) => {
   let depMap = targetMap.get(target)
   let dep = depMap.get(key)
+  triggerEffect(dep)
+}
+export const triggerEffect = (dep) => {
   for (const item of dep) {
     if (item.scheduler) {
       item.scheduler();

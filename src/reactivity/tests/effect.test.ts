@@ -66,7 +66,6 @@ describe('effect', () => {
     // 因为 ++ 的操作是 obj.prop = obj.prop + 1 ; 
     // 其中 obj.prop + 1 又调用了一次 get 造成新的依赖收集。
     obj.prop++
-    console.log(obj.prop,dummy)
     expect(dummy).not.toBe(4)
     runner()
     expect(dummy).toBe(4)
