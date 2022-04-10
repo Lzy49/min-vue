@@ -3,3 +3,6 @@
 - src 对应模块包
   - tests 测试
   - 其他为文件
+
+# 问题收集
+- 当 ref 值是 reactive 时 effect 会被执行多1次 。
