@@ -1,7 +1,7 @@
 import { extend } from '../shared/index'
 let activeEffect: any;
 let shouldTreck = false;
-class ReactiveEffect {
+export class ReactiveEffect {
   #fn: Function
   deps: [] = [];
   scheduler: Function | undefined;
