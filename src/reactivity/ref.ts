@@ -34,3 +34,18 @@ export const ref = (value) => {
 export const isRef = (value) => value.isRef === IS_REF
 // 返回 ref 的原始值
 export const unRef = (ref) => isRef(ref) ? ref.value : ref;
+export const proxyRef = (state) => {
+  return new Proxy(state, {
+    get(target, key) {
+      return unRef(Reflect.get(target, key))
+    },
+    set(target, key, value) {
+      if (isRef(target[key]) && !isRef(value)) {
+        console.log(target[key].value, value)
+        return (target[key].value = value);
+      } else {
+        return Reflect.set(target, key, value)
+      }
+    }
+  })
+}
