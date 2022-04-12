@@ -9,13 +9,18 @@ function path(vnode, container) {
   // 处理组件
   // 判断组件类型
   // Component
-  processComponent(vnode, container)
   // Element 
+  if (typeof vnode.type === 'string') {
+    processElement(vnode, container)
+  } else {
+    processComponent(vnode, container)
+  }
 }
 
 function processComponent(vnode: any, container: any) {
   mountComponent(vnode, container)
 }
+// 初始化
 function mountComponent(vnode: any, container: any) {
   /**
   * 1. 创建组件实例
@@ -26,6 +31,7 @@ function mountComponent(vnode: any, container: any) {
   setupComponent(instance)
   setupRenderEffect(instance, container)
 }
+// 更新
 function setupRenderEffect(instance, container) {
   // 最后得到 vnode 
   const subTree = instance.render();
@@ -33,3 +39,32 @@ function setupRenderEffect(instance, container) {
   path(subTree, container)
 }
 
+
+function processElement(vnode: any, container: any) {
+  mountElement(vnode, container)
+}
+
+// 初始化 
+function mountElement(vnode: any, container: any) {
+  const { type, children, props } = vnode;
+  // 处理 type
+  const el = document.createElement(type)
+  // 处理 props 
+  if (props) {
+    for (const key in props) {
+      const val = typeof props[key] === 'string' ? props[key]  : props[key].join(' '); // typeof props[key] === 'string' ? props[key] : props[key].spile(' ');
+      el.setAttribute(key, val)
+    }
+  }
+  // 处理 children
+  if (typeof children === 'string') {
+    el.textContent = children;
+  } else if (Array.isArray(children)) {
+    mountChildren(children, el)
+  }
+  container.append(el)
+}
+
+function mountChildren(vnode, container) {
+  vnode.forEach(item => path(item, container))
+}

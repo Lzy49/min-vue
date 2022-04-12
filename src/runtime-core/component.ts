@@ -19,7 +19,7 @@ export function setupComponent(instance) {
 
 // 处理 组件的 option
 function setupStatefulComponent(instance) {
-  const component = instance.type.setup();
+  const component = instance.type
   const { setup } = component
   // 处理 setup
   const setupResult = setup || setup()
@@ -41,7 +41,7 @@ function handlerSetupResult(setupResult, instance) {
 // 处理 option -> vnode
 function finishSetupComponent(instance) {
   const component = instance.type;
-  if( component.render){
+  if (component.render) {
     instance.render = component.render // 如果 option 中传入了 render 就使用 option 中的 render.
   }
 }

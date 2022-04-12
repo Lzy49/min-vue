@@ -4,8 +4,10 @@ import { render } from "./renderer";
 export function createApp(rootComponent) {
   return {
     mount(rootContainer) {
-      // rootContainer -> vnode
-
+      // rootContainer -> dom
+      if(typeof rootContainer === 'string'){
+        rootContainer = document.querySelector(rootContainer)
+      }
       // rootContainer 根容器，所有组件渲染后添加的地方。
       // 获取 rootNode 
 
