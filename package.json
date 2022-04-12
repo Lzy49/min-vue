@@ -2,7 +2,8 @@
   "name": "vue",
   "version": "1.0.0",
   "description": "",
-  "main": "index.js",
+  "main": "lib/guide-min-vue.cjs.js",
+  "module": "lib/guide-min-vue.esm.js",
   "directories": {
     "doc": "doc"
   },

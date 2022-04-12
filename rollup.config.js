@@ -1,15 +1,16 @@
 import typescript from '@rollup/plugin-typescript'
 import commonjs from '@rollup/plugin-commonjs'
+import pkg from './package.json'
 export default {
   input: './src/index.ts', // 入口
   output: [ // 出口 
     {
       format: "cjs",
-      file: 'lib/guide-min-vue.cjs.js'
+      file: pkg.main
     },
     {
       format: "es",
-      file: 'lib/guide-min-vue.esm.js'
+      file: pkg.module
     }
   ],
   plugins: [
