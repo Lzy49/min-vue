@@ -64,7 +64,6 @@ export const track = (target: object, key: string | symbol) => {
   trackEffect(dep)
 }
 export const trackEffect = (dep) => {
-  
   // 判断是否存在，存在则不再收集 
   if (dep.has(activeEffect)) {
     return
