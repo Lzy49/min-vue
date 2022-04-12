@@ -1,8 +1,10 @@
+import { publicInstanceHandlers } from './componentPublicInstance'
 // 创建组件实例
 export function createComponentInstance(vnode) {
   const component = {
     vnode,
-    type: vnode.type // type 就是 Component 在 createVnode 中 创建
+    type: vnode.type, // type 就是 Component 在 createVnode 中 创建
+    setupState: {} //   setup 返回的 options
   }
   return component;
 }
@@ -20,9 +22,11 @@ export function setupComponent(instance) {
 // 处理 组件的 option
 function setupStatefulComponent(instance) {
   const component = instance.type
+
+  instance.proxy = new Proxy({ _: instance }, publicInstanceHandlers)
   const { setup } = component
   // 处理 setup
-  const setupResult = setup || setup()
+  const setupResult = setup && setup()
   handlerSetupResult(setupResult, instance)
   finishSetupComponent(instance)
 }

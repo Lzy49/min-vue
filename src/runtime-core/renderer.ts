@@ -33,18 +33,20 @@ function mountComponent(vnode: any, container: any) {
 }
 // 更新
 function setupRenderEffect(instance, container) {
+  const { proxy } = instance
   // 最后得到 vnode 
-  const subTree = instance.render();
+  const subTree = instance.render.call(proxy);
   // vnode -> element -> mountElement
   path(subTree, container)
+  instance.vnode.el = subTree;
 }
 
-
+// 处理 element 类型 
 function processElement(vnode: any, container: any) {
   mountElement(vnode, container)
 }
 
-// 初始化 
+// 初始化  element 类型
 function mountElement(vnode: any, container: any) {
   const { type, children, props } = vnode;
   // 处理 type
@@ -52,7 +54,7 @@ function mountElement(vnode: any, container: any) {
   // 处理 props 
   if (props) {
     for (const key in props) {
-      const val = typeof props[key] === 'string' ? props[key]  : props[key].join(' '); // typeof props[key] === 'string' ? props[key] : props[key].spile(' ');
+      const val = typeof props[key] === 'string' ? props[key] : props[key].join(' '); // typeof props[key] === 'string' ? props[key] : props[key].spile(' ');
       el.setAttribute(key, val)
     }
   }
@@ -65,6 +67,7 @@ function mountElement(vnode: any, container: any) {
   container.append(el)
 }
 
+// 处理所有子节点
 function mountChildren(vnode, container) {
   vnode.forEach(item => path(item, container))
 }
