@@ -1,3 +1,6 @@
+import {
+  h
+} from '../../lib/guide-min-vue.esm.js'
 export default {
   setup() {
     return {
@@ -5,6 +8,22 @@ export default {
     }
   },
   render() {
-    return h('div', `hollo ${this.msg}`)
+    return h('div', null, [
+      h('div', {
+        id: 'root',
+        class: ['red', 'hard']
+      }, `hollo ${this.msg}`),
+      h('div', {
+        id: 'root',
+        class: ['red', 'hard']
+      }, [
+        h('p', {
+          class: ['green', 'hard']
+        }, 'red'),
+        h('p', {
+          class: ['blue', 'hard']
+        }, 'blue'),
+      ]),
+    ])
   }
 }
