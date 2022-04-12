@@ -8,6 +8,7 @@ export default {
     }
   },
   render() {
+    window.self = this;
     return h('div', null, [
       h('div', {
         id: 'root',
