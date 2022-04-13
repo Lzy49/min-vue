@@ -1,18 +1,17 @@
 import { createComponentInstance, setupComponent } from "./component"
-
+import { ShapFlags } from '../shared/ShapFlags'
 export function render(vnode, container) {
   // 调用 path 方法 （拆分时为了 ptah 递归）
   path(vnode, container)
 }
 
 function path(vnode, container) {
-  // 处理组件
   // 判断组件类型
-  // Component
-  // Element 
-  if (typeof vnode.type === 'string') {
+  if (vnode.shapFlag & ShapFlags.ELEMENT) {
+    // Element 
     processElement(vnode, container)
-  } else {
+  } else if (vnode.shapFlag & ShapFlags.STATEFUL_COMPONENT) {
+    // Component
     processComponent(vnode, container)
   }
 }
@@ -33,6 +32,7 @@ function mountComponent(vnode: any, container: any) {
 }
 // 更新
 function setupRenderEffect(instance, container) {
+  // ShapeFlags 概念抽离
   const { proxy } = instance
   // 最后得到 vnode 
   const subTree = instance.render.call(proxy);
@@ -48,7 +48,7 @@ function processElement(vnode: any, container: any) {
 
 // 初始化  element 类型
 function mountElement(vnode: any, container: any) {
-  const { type, children, props } = vnode;
+  const { type, children, props, shapFlag } = vnode;
   // 处理 type
   const el = document.createElement(type)
   // 处理 props 
@@ -59,9 +59,11 @@ function mountElement(vnode: any, container: any) {
     }
   }
   // 处理 children
-  if (typeof children === 'string') {
+  if (shapFlag & ShapFlags.TEXT_CHILDREN) {
+    // 处理文字
     el.textContent = children;
-  } else if (Array.isArray(children)) {
+  } else if (shapFlag & ShapFlags.ARRAY_CHILDREN) {
+    // 处理数组
     mountChildren(children, el)
   }
   container.append(el)
