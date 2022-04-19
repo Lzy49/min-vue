@@ -45,5 +45,8 @@
     "commit": "cz",
     "test": "jest",
     "build": "rollup -c rollup.config.js"
+  },
+  "dependencies": {
+    "tslib": "^2.3.1"
   }
 }
