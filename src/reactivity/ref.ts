@@ -41,7 +41,6 @@ export const proxyRef = (state) => {
     },
     set(target, key, value) {
       if (isRef(target[key]) && !isRef(value)) {
-        console.log(target[key].value, value)
         return (target[key].value = value);
       } else {
         return Reflect.set(target, key, value)
