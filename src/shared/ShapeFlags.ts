@@ -1,5 +1,5 @@
 
-export const enum ShapFlags {
+export const enum ShapeFlags {
   ELEMENT = 1, // 0001
   STATEFUL_COMPONENT = 1 << 1, // 0010
   TEXT_CHILDREN = 1 << 2, // 0100
@@ -32,11 +32,11 @@ export const enum ShapFlags {
 // Vue 使用 ShapFlags 的方式 来给 每个虚拟节点增加了多个类型，在后面点对点的对比时，可以知道 该节点是不是有子节点，子节点类型。该节点类型。
 function test() {
   // 通过或运算符设置标签 含义
-  const test1 = ShapFlags.STATEFUL_COMPONENT | ShapFlags.TEXT_CHILDREN  // STATEFUL_COMPONENT + TEXT_CHILDREN =  = 0110 完成 
+  const test1 = ShapeFlags.STATEFUL_COMPONENT | ShapeFlags.TEXT_CHILDREN  // STATEFUL_COMPONENT + TEXT_CHILDREN =  = 0110 完成 
   // 比较上边 test1 是什么标签 
-  console.log(test1 & ShapFlags.ELEMENT) // 0
-  console.log(test1 & ShapFlags.STATEFUL_COMPONENT) // 2
-  console.log(test1 & ShapFlags.TEXT_CHILDREN) // 4
-  console.log(test1 & ShapFlags.ARRAY_CHILDREN) // 0
+  console.log(test1 & ShapeFlags.ELEMENT) // 0
+  console.log(test1 & ShapeFlags.STATEFUL_COMPONENT) // 2
+  console.log(test1 & ShapeFlags.TEXT_CHILDREN) // 4
+  console.log(test1 & ShapeFlags.ARRAY_CHILDREN) // 0
   // 综上可以知道 设置的值 会 > 0 否则会  === 0
 }

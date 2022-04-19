@@ -1,5 +1,5 @@
 import { createComponentInstance, setupComponent } from "./component"
-import { ShapFlags } from '../shared/ShapFlags'
+import { ShapeFlags } from '../shared/ShapeFlags'
 export function render(vnode, container) {
   // 调用 path 方法 （拆分时为了 ptah 递归）
   path(vnode, container)
@@ -7,10 +7,10 @@ export function render(vnode, container) {
 
 function path(vnode, container) {
   // 判断组件类型
-  if (vnode.shapFlag & ShapFlags.ELEMENT) {
+  if (vnode.shapFlag & ShapeFlags.ELEMENT) {
     // Element 
     processElement(vnode, container)
-  } else if (vnode.shapFlag & ShapFlags.STATEFUL_COMPONENT) {
+  } else if (vnode.shapFlag & ShapeFlags.STATEFUL_COMPONENT) {
     // Component
     processComponent(vnode, container)
   }
@@ -72,10 +72,10 @@ function mountElement(vnode: any, container: any) {
     }
   }
   // 处理 children
-  if (shapFlag & ShapFlags.TEXT_CHILDREN) {
+  if (shapFlag & ShapeFlags.TEXT_CHILDREN) {
     // 处理文字
     el.textContent = children;
-  } else if (shapFlag & ShapFlags.ARRAY_CHILDREN) {
+  } else if (shapFlag & ShapeFlags.ARRAY_CHILDREN) {
     // 处理数组
     mountChildren(children, el)
   }
