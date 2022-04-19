@@ -46,6 +46,7 @@ function processElement(vnode: any, container: any) {
   mountElement(vnode, container)
 }
 
+const isOn = (key: string) => /^on[A-Z]/.test(key)
 // 初始化  element 类型
 function mountElement(vnode: any, container: any) {
   const { type, children, props, shapFlag } = vnode;
@@ -53,9 +54,21 @@ function mountElement(vnode: any, container: any) {
   const el = document.createElement(type)
   // 处理 props 
   if (props) {
+    // 处理事件形式的字符串
+    // 处理字符串形式的 props
+
     for (const key in props) {
-      const val = typeof props[key] === 'string' ? props[key] : props[key].join(' '); // typeof props[key] === 'string' ? props[key] : props[key].spile(' ');
-      el.setAttribute(key, val)
+      let val = props[key];
+      if (isOn(key)) {
+        const event = key.slice(2).toLocaleLowerCase();
+        el.addEventListener(event, props[key])
+      } else {
+        // 单独处理
+        if (key === 'class' || key === 'style') {
+          val = typeof val === 'string' ? val : val.join(' ');
+        }
+        el.setAttribute(key, val)
+      }
     }
   }
   // 处理 children

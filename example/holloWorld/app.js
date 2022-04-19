@@ -10,13 +10,24 @@ export default {
   render() {
     window.self = this;
     return h('div', null, [
+      h('button', {
+        onClick: () => {
+          alert('你好')
+        }
+      }, '点我点我，块'),
+
+      h('input', {
+        onBlur: () => {
+          alert('你好')
+        }
+      }),
       h('div', {
         id: 'root',
         class: ['red', 'hard']
       }, `hollo ${this.msg}`),
       h('div', {
         id: 'root',
-        class: ['red', 'hard']
+        class: ['red', 'hard'],
       }, [
         h('p', {
           class: ['green', 'hard']
