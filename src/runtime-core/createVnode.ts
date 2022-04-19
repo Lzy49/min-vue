@@ -10,10 +10,11 @@ export function createVnode(type, props?, children?) {
   }
   // 处理 node children
   if (typeof children === 'string') {
-    vnode.shapFlag = vnode.shapFlag | ShapFlags.TEXT_CHILDREN
+    vnode.shapFlag |= ShapFlags.TEXT_CHILDREN
   } else if (Array.isArray(children)) {
-    vnode.shapFlag = vnode.shapFlag | ShapFlags.ARRAY_CHILDREN
+    vnode.shapFlag |= ShapFlags.ARRAY_CHILDREN
   }
+  console.log(vnode)
   return vnode
 }
 
