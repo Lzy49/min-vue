@@ -7,10 +7,10 @@ export function render(vnode, container) {
 
 function path(vnode, container) {
   // 判断组件类型
-  if (vnode.shapFlag & ShapeFlags.ELEMENT) {
+  if (vnode.shapeFlag & ShapeFlags.ELEMENT) {
     // Element 
     processElement(vnode, container)
-  } else if (vnode.shapFlag & ShapeFlags.STATEFUL_COMPONENT) {
+  } else if (vnode.shapeFlag & ShapeFlags.STATEFUL_COMPONENT) {
     // Component
     processComponent(vnode, container)
   }
@@ -49,7 +49,7 @@ function processElement(vnode: any, container: any) {
 const isOn = (key: string) => /^on[A-Z]/.test(key)
 // 初始化  element 类型
 function mountElement(vnode: any, container: any) {
-  const { type, children, props, shapFlag } = vnode;
+  const { type, children, props, shapeFlag } = vnode;
   // 处理 type
   const el = document.createElement(type)
   // 处理 props 
@@ -64,18 +64,17 @@ function mountElement(vnode: any, container: any) {
         el.addEventListener(event, props[key])
       } else {
         // 单独处理
-        if (key === 'class' || key === 'style') {
+        if (key === 'class') {
           val = typeof val === 'string' ? val : val.join(' ');
         }
-        el.setAttribute(key, val)
       }
     }
   }
   // 处理 children
-  if (shapFlag & ShapeFlags.TEXT_CHILDREN) {
+  if (shapeFlag & ShapeFlags.TEXT_CHILDREN) {
     // 处理文字
     el.textContent = children;
-  } else if (shapFlag & ShapeFlags.ARRAY_CHILDREN) {
+  } else if (shapeFlag & ShapeFlags.ARRAY_CHILDREN) {
     // 处理数组
     mountChildren(children, el)
   }
