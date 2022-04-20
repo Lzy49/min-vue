@@ -44,6 +44,7 @@
     "prepare": "husky install",
     "commit": "cz",
     "test": "jest",
+    "dev": "yarn build --watch",
     "build": "rollup -c rollup.config.js"
   },
   "dependencies": {
