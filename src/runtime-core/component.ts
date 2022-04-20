@@ -10,7 +10,7 @@ export function createComponentInstance(vnode) {
     props: {},
     type: vnode.type, // type 就是 Component 在 createVnode 中 创建
     setupState: {}, //   setup 返回的 options
-    emit: () => {}
+    emit: () => { }
   }
   initEmit(component);
   return component;
@@ -36,7 +36,12 @@ function setupStatefulComponent(instance) {
   const { setup } = component
   // 处理 setup
   // 在执行 setup 时传入 props 
-  const setupResult = setup && setup(shallowReadonly(instance.props), { emit: instance.emit })
+  let setupResult;
+  if (setup) {
+    setCurrentInstance(instance)
+    setupResult = setup(shallowReadonly(instance.props), { emit: instance.emit })
+    removeCurrentInstance()
+  }
   handlerSetupResult(setupResult, instance)
   finishSetupComponent(instance)
 }
@@ -60,3 +65,15 @@ function finishSetupComponent(instance) {
   }
 }
 
+let currentInstance = null;
+export function getCurrentInstance() {
+  return currentInstance
+}
+
+function setCurrentInstance(instance) {
+  currentInstance = instance
+}
+
+function removeCurrentInstance() {
+  currentInstance = null
+}
