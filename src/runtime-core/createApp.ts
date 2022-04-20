@@ -16,7 +16,6 @@ export function createApp(rootComponent) {
       const vnode = createVnode(rootComponent);
       //  
       render(vnode, rootContainer);
-      console.log(vnode)
     }
   }
 }

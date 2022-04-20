@@ -4,12 +4,14 @@ import { initProps } from './componentProps'
 import { initEmit } from './componentEmit'
 import { initSlots } from './componentSlot'
 // 创建组件实例
-export function createComponentInstance(vnode) {
+export function createComponentInstance(vnode, parent) {
   const component = {
     vnode,
     props: {},
     type: vnode.type, // type 就是 Component 在 createVnode 中 创建
     setupState: {}, //   setup 返回的 options
+    parent,
+    provide: parent?.provide || {},// 如果没有设置 provide ， provide 指向其父级的 provide 
     emit: () => { }
   }
   initEmit(component);
