@@ -1,6 +1,7 @@
 import { isObject } from "../shared";
 import { ShapeFlags } from "../shared/ShapeFlags"
-
+export const Text = Symbol('Text')
+export const Fragment = Symbol('Fragment')
 export function createVnode(type, props?, children?) {
   // 创建 node 本身
   const vnode = {
@@ -30,4 +31,7 @@ export const getShapeFlag = (type) => {
   } else {
     return ShapeFlags.STATEFUL_COMPONENT
   }
+}
+export const createTextVnode = (text: string) => {
+  return createVnode(Text, {}, text)
 }

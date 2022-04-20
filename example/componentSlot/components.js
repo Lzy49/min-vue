@@ -1,6 +1,7 @@
 import {
   h,
-  renderSlot
+  renderSlot,
+  createTextVnode
 } from "../../lib/guide-min-vue.esm.js"
 
 const Child = {
@@ -34,8 +35,9 @@ export const App = {
           default: ({
             age
           }) => [
-            h("p", {}, "我是通过 slot 渲染出来的第一个元素 "),
+            h("p", {class:'red'}, "我是通过 slot 渲染出来的第一个元素 "),
             h("p", {}, "我是通过 slot 渲染出来的第二个元素"),
+            createTextVnode('冒昧的 textNode'),
             h("p", {}, `我可以接收到 age: ${age}`),
           ],
         }
