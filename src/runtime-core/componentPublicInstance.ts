@@ -1,7 +1,8 @@
 import { hasOwn } from "../shared";
 
 const publicPropertiesMap = {
-  $el: (i) => i.vnode.el
+  $el: (i) => i.vnode.el,
+  $slots: (i) => i.vnode.children
 }
 export const publicInstanceHandlers = {
   get({ _: instance }, key) {

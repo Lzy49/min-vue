@@ -4,8 +4,8 @@ export const enum ShapeFlags {
   STATEFUL_COMPONENT = 1 << 1, // 0010
   TEXT_CHILDREN = 1 << 2, // 0100
   ARRAY_CHILDREN = 1 << 3, // 1000
+  SLOTS_CHILDREN = 1 << 4
 }
-
 // 逻辑
 // 对象选择 -> 位运算
 // 0000 
@@ -14,7 +14,7 @@ export const enum ShapeFlags {
 // 0100 -> text_children
 // 1000 -> array_children
 // | 两位都为 0 才为 0
-// ShapFlags 思想
+// shapeFlags 思想
 // 1. 设置 固定值。
 // 2. 查找 判断是否属于该类型
 // 通过 key value 可实现 但不够高效
@@ -29,7 +29,7 @@ export const enum ShapeFlags {
 // - 0010 & 0001 -> 0000
 // 通过 位运算 来处理 性能更高
 // 位运算来处理问题虽然性能高，但是可读性差。在开发时，应使用可读性高的方式实现。后头再进行重构来提高性能。
-// Vue 使用 ShapFlags 的方式 来给 每个虚拟节点增加了多个类型，在后面点对点的对比时，可以知道 该节点是不是有子节点，子节点类型。该节点类型。
+// Vue 使用 shapeFlags 的方式 来给 每个虚拟节点增加了多个类型，在后面点对点的对比时，可以知道 该节点是不是有子节点，子节点类型。该节点类型。
 function test() {
   // 通过或运算符设置标签 含义
   const test1 = ShapeFlags.STATEFUL_COMPONENT | ShapeFlags.TEXT_CHILDREN  // STATEFUL_COMPONENT + TEXT_CHILDREN =  = 0110 完成 

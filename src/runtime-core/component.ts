@@ -2,6 +2,7 @@ import { publicInstanceHandlers } from './componentPublicInstance'
 import { shallowReadonly } from '../reactivity/reactive'
 import { initProps } from './componentProps'
 import { initEmit } from './componentEmit'
+import { initSlots } from './componentSlot'
 // 创建组件实例
 export function createComponentInstance(vnode) {
   const component = {
@@ -9,7 +10,7 @@ export function createComponentInstance(vnode) {
     props: {},
     type: vnode.type, // type 就是 Component 在 createVnode 中 创建
     setupState: {}, //   setup 返回的 options
-    emit: () => { }
+    emit: () => {}
   }
   initEmit(component);
   return component;
@@ -20,7 +21,8 @@ export function setupComponent(instance) {
   // props,slots,setup
   // 初始化 props 
   initProps(instance, instance.vnode.props);
-  // initSlots();
+  // 初始化 slot
+  initSlots(instance, instance.vnode.children);
 
   // 初始化有状态的 Component 
   setupStatefulComponent(instance)
@@ -50,7 +52,7 @@ function handlerSetupResult(setupResult, instance) {
   }
 }
 
-// 处理 option -> vnode
+// 处理 绑定实例render
 function finishSetupComponent(instance) {
   const component = instance.type;
   if (component.render) {

@@ -1,3 +1,4 @@
+import { isObject } from "../shared";
 import { ShapeFlags } from "../shared/ShapeFlags"
 
 export function createVnode(type, props?, children?) {
@@ -6,19 +7,24 @@ export function createVnode(type, props?, children?) {
     type,
     props,
     children,
-    shapFlag: getShapFlag(type)
+    shapeFlag: getShapeFlag(type)
   }
   // 处理 node children
   if (typeof children === 'string' || typeof children === 'number') {
-    vnode.shapFlag |= ShapeFlags.TEXT_CHILDREN
+    vnode.shapeFlag |= ShapeFlags.TEXT_CHILDREN
   } else if (Array.isArray(children)) {
-    vnode.shapFlag |= ShapeFlags.ARRAY_CHILDREN
+    vnode.shapeFlag |= ShapeFlags.ARRAY_CHILDREN
+  }
+
+  // 处理 slot children 如果是子节点是对象的话就是一个具命list
+  if (vnode.shapeFlag & ShapeFlags.ARRAY_CHILDREN && isObject(children)) {
+    vnode.shapeFlag |= ShapeFlags.SLOTS_CHILDREN;
   }
   return vnode
 }
 
 
-export const getShapFlag = (type) => {
+export const getShapeFlag = (type) => {
   if (typeof type === 'string') {
     return ShapeFlags.ELEMENT
   } else {
