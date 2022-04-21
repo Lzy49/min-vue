@@ -6,9 +6,9 @@ import { createAppAPI } from './createApp'
 export function createRenderer(options) {
   // 解构 api
   const {
-    createElement,
-    patchProp,
-    insert,
+    createElement: hostCreateElement,
+    patchProp: hostPatchProp,
+    insert: hostInsert,
   } = options
 
   function render(vnode, container) {
@@ -73,14 +73,14 @@ export function createRenderer(options) {
   function mountElement(vnode: any, container: any, parentComponent) {
     const { type, children, props, shapeFlag } = vnode;
     // 处理 type
-    const el = createElement(type)
+    const el = hostCreateElement(type)
     // 处理 props 
     if (props) {
       // 处理事件形式的字符串
       // 处理字符串形式的 props
       for (const key in props) {
         let val = props[key];
-        patchProp(key, val, el)
+        hostPatchProp(key, val, el)
       }
     }
     // 处理 children
@@ -92,7 +92,7 @@ export function createRenderer(options) {
       mountChildren(children, el, parentComponent)
     }
     vnode.el = el
-    insert(el, container)
+    hostInsert(el, container)
   }
 
   // 处理所有子节点
