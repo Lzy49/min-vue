@@ -9,3 +9,4 @@ export const capitalize = (str: string) => str ? str[0].toLocaleUpperCase() + st
 export const camelize = (str: string) => str ? str.replace(/-(\w)/g, (_, c: string) => c ? c.toUpperCase() : '') : '';
 // add ->onAdd
 export const toHandlerKey = (str: string) => str ? 'on' + capitalize(str) : '';
+export const isOn = (key: string) => /^on[A-Z]/.test(key)
