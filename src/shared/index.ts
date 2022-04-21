@@ -10,3 +10,4 @@ export const camelize = (str: string) => str ? str.replace(/-(\w)/g, (_, c: stri
 // add ->onAdd
 export const toHandlerKey = (str: string) => str ? 'on' + capitalize(str) : '';
 export const isOn = (key: string) => /^on[A-Z]/.test(key)
+export const EMPTY_OBJECT = {};

@@ -6,16 +6,20 @@ const createElement = (type) => {
   return document.createElement(type)
 }
 // 处理 el 的 props 
-const patchProp = (el, key, val) => {
+const patchProp = (el, key, prevValue, nextValue) => {
+  
   if (isOn(key)) {
     const event = key.slice(2).toLocaleLowerCase();
-    el.addEventListener(event, val)
+    el.addEventListener(event, nextValue)
   } else {
-    // 单独处理
-    if (key === 'class') {
-      val = typeof val === 'string' ? val : val.join(' ');
+    if (nextValue === undefined || nextValue === null) {
+      el.removeAttribute(key)
+    } else {
+      if (key === 'class') {
+        nextValue = typeof nextValue === 'string' ? nextValue : nextValue.join(' ');
+      }
+      el.setAttribute(key, nextValue)
     }
-    el.setAttribute(key, val)
   }
 }
 // 插入 el

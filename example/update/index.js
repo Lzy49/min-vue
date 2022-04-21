@@ -6,21 +6,37 @@ import {
 const App = {
   setup() {
     let age = ref(10);
+    let color = ref('');
     const add = () => {
       console.log('?')
       age.value++;
     }
+    const setColor = (v) => {
+      color.value = v
+    }
     return {
+      color,
       age,
-      add
+      add,
+      setColor
     }
   },
   render() {
-    return h('div', {}, [
+    return h('div', {
+      style: 'color:' + this.color
+    }, [
       h('div', {}, 'my age is ' + this.age),
       h('button', {
         onClick: this.add
-      }, 'click')
+      }, 'addAge'),
+      h('button', {
+        onClick: () => {
+          this.setColor('red')
+        }
+      }, 'color -> red'),
+      h('button', {
+        onClick: ()=>this.setColor()
+      }, 'init color')
     ])
   }
 }

@@ -3,6 +3,7 @@ import { ShapeFlags } from '../shared/ShapeFlags'
 import { Text, Fragment } from './createVnode'
 import { createAppAPI } from './createApp'
 import { effect } from "../reactivity/effect"
+import { EMPTY_OBJECT } from "../shared"
 // 接收一个 渲染工具
 export function createRenderer(options) {
   // 解构 api
@@ -13,11 +14,11 @@ export function createRenderer(options) {
   } = options
 
   function render(vnode, container) {
-    // 调用 path 方法 （拆分时为了 ptah 递归）
-    path(null, vnode, container)
+    // 调用 patch 方法 （拆分时为了 ptah 递归）
+    patch(null, vnode, container)
   }
 
-  function path(prevVnode, nextVnode, container, parentComponent = null) {
+  function patch(prevVnode, nextVnode, container, parentComponent = null) {
     const { type } = nextVnode
     switch (type) {
       case Text:
@@ -74,7 +75,7 @@ export function createRenderer(options) {
         // 执行 组件 render 函数 返回最后得到 vnode 
         const subTree = instance.subTree = instance.render.call(proxy);
         // vnode -> element -> mountElement
-        path(null, subTree, container, instance)
+        patch(null, subTree, container, instance)
         instance.vnode.el = subTree.el;
         instance.isMounted = true;
       } else {
@@ -83,7 +84,7 @@ export function createRenderer(options) {
         const prevTree = instance.subTree; // 老 vnode
         // 返回 新的 vnode
         const subTree = instance.subTree = instance.render.call(proxy); // 新 vnode 
-        path(prevTree, subTree, container, instance)
+        patch(prevTree, subTree, container, instance)
       }
     })
 
@@ -92,7 +93,7 @@ export function createRenderer(options) {
   // 处理 element 类型 
   function processElement(prevVnode, nextVnode: any, container: any, parentComponent) {
     if (prevVnode) {
-
+      updateElement(prevVnode, nextVnode, container)
     } else {
       mountElement(nextVnode, container, parentComponent)
     }
@@ -109,7 +110,7 @@ export function createRenderer(options) {
       // 处理字符串形式的 props
       for (const key in props) {
         let val = props[key];
-        hostPatchProp(el, key, val)
+        hostPatchProp(el, key, null, val)
       }
     }
     // 处理 children
@@ -123,10 +124,32 @@ export function createRenderer(options) {
     vnode.el = el
     hostInsert(el, container)
   }
+  // 更新 element 类型 
+
+  function updateElement(prevVnode: any, nextVnode: any, container: any) {
+    nextVnode.el = prevVnode.el
+    patchProps(nextVnode.el, prevVnode.props || EMPTY_OBJECT, nextVnode.props || EMPTY_OBJECT)
+  }
+
+  // 更新 props 
+  function patchProps(el, prevProps, nextProps) {
+    // 1. 老的有新的无
+    for (const key in prevProps) {
+      if (prevProps[key] && !nextProps[key]) {
+        hostPatchProp(el, key, prevProps[key], nextProps[key])
+      }
+    }
+    // 2.新的有，且与老的不一样 (undefined 也不怕，因为 如果老的是 undefined 也是删除)
+    for (const key in nextProps) {
+      if (nextProps[key] !== prevProps[key]) {
+        hostPatchProp(el, key, prevProps[key], nextProps[key])
+      }
+    }
+  }
 
   // 处理所有子节点
   function mountChildren(vnode, container, parentComponent) {
-    vnode.forEach(item => path(null, item, container, parentComponent))
+    vnode.forEach(item => patch(null, item, container, parentComponent))
   }
 
   // 处理 text 节点
