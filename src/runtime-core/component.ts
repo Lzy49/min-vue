@@ -3,6 +3,7 @@ import { shallowReadonly } from '../reactivity/reactive'
 import { initProps } from './componentProps'
 import { initEmit } from './componentEmit'
 import { initSlots } from './componentSlot'
+import { proxyRef } from '../reactivity'
 // 创建组件实例
 export function createComponentInstance(vnode, parent) {
   const component = {
@@ -11,6 +12,7 @@ export function createComponentInstance(vnode, parent) {
     type: vnode.type, // type 就是 Component 在 createVnode 中 创建
     setupState: {}, //   setup 返回的 options
     parent,
+    isMounted: false, // 组件未初始化
     provide: parent?.provide || {},// 如果没有设置 provide ， provide 指向其父级的 provide 
     emit: () => { }
   }
@@ -55,7 +57,7 @@ function handlerSetupResult(setupResult, instance) {
   }
   if (typeof setupResult === 'object') {
     // state
-    instance.setupState = setupResult;
+    instance.setupState = proxyRef(setupResult);
   }
 }
 
