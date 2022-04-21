@@ -80,7 +80,7 @@ export function createRenderer(options) {
       // 处理字符串形式的 props
       for (const key in props) {
         let val = props[key];
-        hostPatchProp(key, val, el)
+        hostPatchProp(el, key, val)
       }
     }
     // 处理 children

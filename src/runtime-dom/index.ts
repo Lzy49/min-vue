@@ -6,7 +6,7 @@ const createElement = (type) => {
   return document.createElement(type)
 }
 // 处理 el 的 props 
-const patchProp = (key, val, el) => {
+const patchProp = (el, key, val) => {
   if (isOn(key)) {
     const event = key.slice(2).toLocaleLowerCase();
     el.addEventListener(event, val)
