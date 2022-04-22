@@ -5,9 +5,16 @@ import { isOn } from '../shared';
 const createElement = (type) => {
   return document.createElement(type)
 }
+const createText = (children) => {
+  return document.createTextNode(children)
+}
+// 设置节点text
+const setElementText = (el, val) => {
+  el.textContent = val;
+}
 // 处理 el 的 props 
 const patchProp = (el, key, prevValue, nextValue) => {
-  
+
   if (isOn(key)) {
     const event = key.slice(2).toLocaleLowerCase();
     el.addEventListener(event, nextValue)
@@ -26,7 +33,9 @@ const patchProp = (el, key, prevValue, nextValue) => {
 const insert = (el, parent) => {
   parent.append(el)
 }
-
+const remove = (el) => {
+  el.remove();
+}
 // 然后要用这些渲染器创建 render -> 创建 createApp 
 // 创建 基于 上面提供的API的一个Vue ，并将render 缓存，下次再取可以直接使用 renderer
 let renderer;
@@ -36,12 +45,12 @@ function ensureRenderer() {
     renderer ||
     (renderer = createRenderer({
       createElement,
-      // createText,
+      createText,
       // setText,
-      // setElementText,
+      setElementText,
       patchProp,
       insert,
-      // remove,
+      remove,
     }))
   );
 }
