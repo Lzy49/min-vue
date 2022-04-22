@@ -8,6 +8,7 @@ export function createVnode(type, props?, children?) {
     type,
     props,
     children,
+    key: props?.key,
     shapeFlag: getShapeFlag(type)
   }
   // 处理 node children

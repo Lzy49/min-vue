@@ -27,7 +27,8 @@ export function createRenderer(options) {
    * @param container 父级容器（doument)
    * @param parentComponent 父级instace
    */
-  function patch(prevVnode, nextVnode, container, parentComponent = null) {
+  function patch(prevVnode, nextVnode, container, parentComponent = null, anchor = null) {
+
     const { type } = nextVnode
     switch (type) {
       case Text:
@@ -40,7 +41,7 @@ export function createRenderer(options) {
         // 判断组件类型
         if (nextVnode.shapeFlag & ShapeFlags.ELEMENT) {
           // Element 
-          processElement(prevVnode, nextVnode, container, parentComponent)
+          processElement(prevVnode, nextVnode, container, parentComponent, anchor)
         } else if (nextVnode.shapeFlag & ShapeFlags.STATEFUL_COMPONENT) {
           // Component
           processComponent(prevVnode, nextVnode, container, parentComponent)
@@ -99,19 +100,19 @@ export function createRenderer(options) {
   }
 
   // 处理 element 类型 
-  function processElement(prevVnode, nextVnode: any, container: any, parentComponent) {
+  function processElement(prevVnode, nextVnode: any, container: any, parentComponent, anchor) {
     if (prevVnode) {
       updateElement(prevVnode, nextVnode, container, parentComponent)
     } else {
-      mountElement(nextVnode, container, parentComponent)
+      mountElement(nextVnode, container, parentComponent, anchor)
     }
   }
 
   // 初始化  element 类型
-  function mountElement(vnode: any, container: any, parentComponent) {
+  function mountElement(vnode: any, container: any, parentComponent, anchor) {
     const { type, children, props, shapeFlag } = vnode;
     // 处理 type
-    const el = hostCreateElement(type)
+    const el = vnode.el = hostCreateElement(type)
     // 处理 props 
     if (props) {
       // 处理事件形式的字符串
@@ -129,8 +130,8 @@ export function createRenderer(options) {
       // 处理数组
       mountChildren(children, el, parentComponent)
     }
-    vnode.el = el
-    hostInsert(el, container)
+
+    hostInsert(el, container, anchor)
   }
   // 更新 element 类型 
 
@@ -140,6 +141,7 @@ export function createRenderer(options) {
     patchProps(el, prevVnode.props || EMPTY_OBJECT, nextVnode.props || EMPTY_OBJECT)
     // 对比 children 并更新
     patchChildren(el, nextVnode, prevVnode, parentComponent)
+
   }
 
   // 更新 props 
@@ -176,10 +178,54 @@ export function createRenderer(options) {
       if (prevFlag & ShapeFlags.TEXT_CHILDREN) {
         hostSetElementText(el, '')
         mountChildren(nextChildren, el, parentComponent)
+      } else {
+        pathcKeyedChildren(el, nextChildren, prevChildren, parentComponent);
       }
-
     }
+  }
+  const isSameVnodeType = (nextVnode, prevVnode) => (nextVnode.type === prevVnode.type && nextVnode.key === prevVnode.key)
+  function pathcKeyedChildren(el, nextChildren, prevChildren, parentComponent) {
+    // 进行双端
+    let i = 0;
+    let nextR = nextChildren.length - 1;
+    let prevR = prevChildren.length - 1;
+    // 从前循环，必须不能越界
+    while (i <= nextR && i <= prevR) {
+      if (!isSameVnodeType(nextChildren[i], prevChildren[i])) {
+        break;
+      }
+      i++
+    }
+    // 从后往前，必须不能比i小
+    while (nextR >= i && prevR >= i) {
+      if (!isSameVnodeType(nextChildren[nextR], prevChildren[prevR])) {
 
+        break;
+      }
+      nextR--
+      prevR--
+    }
+    // 缩小范围后开始甄别
+    // ABC -> ABCD  i === 3 , nextR 3 , prevR 2
+    // 新增     0   0  -1 
+    console.log(i, nextR, prevR)
+    console.log(prevChildren)
+    if (i <= nextR && i > prevR) {
+      console.log(prevChildren)
+      while (i <= nextR) {
+        patch(null, nextChildren[i], el, parentComponent, prevChildren[prevR + 1]?.el)
+        i++;
+      }
+    } else if (i <= prevR && i > nextR) {
+      // 删除
+      // ABCD -> ABC  i === 3 , nextR 2 , prevR 3
+      console.log(1)
+      // 新节点比旧节点少，需要删除
+      while (i <= prevR) {
+        hostRemove(prevChildren[i].el)
+        i++;
+      }
+    }
   }
   // 删除子节点
   function removeChildren(children) {

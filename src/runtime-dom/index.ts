@@ -30,8 +30,8 @@ const patchProp = (el, key, prevValue, nextValue) => {
   }
 }
 // 插入 el
-const insert = (el, parent) => {
-  parent.append(el)
+const insert = (child, parent, anchor) => {
+  parent.insertBefore(child, anchor);
 }
 const remove = (el) => {
   el.remove();
