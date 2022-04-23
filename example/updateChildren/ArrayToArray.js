@@ -61,7 +61,8 @@ function bcdToabcd() {
       }, "D"),
       h("p", {
         key: "E"
-      }, "E"),    ]
+      }, "E"),
+    ]
   }
 }
 // ABCD -> BCD
@@ -124,17 +125,39 @@ function abcdToabc() {
     ]
   }
 }
+const createNodeList = (keys) => {
+  const list = []
+  for (let key of keys) {
+    list.push(
+      h("p", {
+        key
+      }, key)
+    )
+  }
+  return list
+}
+// ABCDOEPF -> ABCDEF 
+function abcdopefToabcdef() {
+  let prevChildren = createNodeList('ABCDOEPF');
+  let nextChildren = createNodeList('ABCDEF');
+  nextChildren[4].props.class = "red"
+  return {
+    prevChildren,
+    nextChildren
+  }
+}
 
 const test = [
   abcTOabcd, // ABC -> ABCD 尾部 + 1
   bcdToabcd, // BCD -> ABCD 首部 + 1
   abcdTobcd, // ABCD -> BCD 首部 - 1
   abcdToabc, // ABCD -> ABC 尾部 - 1
+  abcdopefToabcdef, //  ABCDOPEF -> ABCDEF 
 ]
 const {
   prevChildren,
   nextChildren
-} = test[2]();
+} = test[test.length - 1]();
 
 export const ArrayToArray = {
   name: 'ArrayToArray',

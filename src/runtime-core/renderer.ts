@@ -179,12 +179,12 @@ export function createRenderer(options) {
         hostSetElementText(el, '')
         mountChildren(nextChildren, el, parentComponent)
       } else {
-        pathcKeyedChildren(el, nextChildren, prevChildren, parentComponent);
+        patchKeyedChildren(el, nextChildren, prevChildren, parentComponent);
       }
     }
   }
   const isSameVnodeType = (nextVnode, prevVnode) => (nextVnode.type === prevVnode.type && nextVnode.key === prevVnode.key)
-  function pathcKeyedChildren(el, nextChildren, prevChildren, parentComponent) {
+  function patchKeyedChildren(el, nextChildren, prevChildren, parentComponent) {
     // 进行双端
     let i = 0;
     let nextR = nextChildren.length - 1;
@@ -208,15 +208,15 @@ export function createRenderer(options) {
     // 缩小范围后开始甄别
     // ABC -> ABCD  i === 3 , nextR 3 , prevR 2
     // 新增     0   0  -1 
-    console.log(i, nextR, prevR)
-    console.log(prevChildren)
+
     if (i <= nextR && i > prevR) {
-      console.log(prevChildren)
+      // 解决 新的还没用完，老的已经用完了。说明是插入形式的，两边全连着插入一部分
       while (i <= nextR) {
         patch(null, nextChildren[i], el, parentComponent, prevChildren[prevR + 1]?.el)
         i++;
       }
     } else if (i <= prevR && i > nextR) {
+      // 解决 老的没比较完，新的已经比较完了，说明是删除了几个点。
       // 删除
       // ABCD -> ABC  i === 3 , nextR 2 , prevR 3
       console.log(1)
@@ -225,6 +225,51 @@ export function createRenderer(options) {
         hostRemove(prevChildren[i].el)
         i++;
       }
+    } else {
+      // 留下，老的没用完，新的也没用完。各自剩下一个最小序列。
+      // 解决方案 比较 两个list找到不同的，要不增要不删，一样的。继续去path
+      // 确定两个队列 两个都是 i 开始 prevR , nextR  结束
+      let nextIndex = i;
+      let prevIndex = i;
+      // 优化 1. 通过 key 优化循环查询
+      let nextKeytoIndexMap = new Map()
+      for (let index = nextIndex; index <= nextR; index++) {
+        nextChildren[index]?.key && nextKeytoIndexMap.set(nextChildren[index].key, index)
+      }
+      // 优化 2. 通过 nextChildren 长度来提前结束搜寻
+      let nextLength = nextR - nextIndex + 1;
+      let catchLength = 0;
+      // ---循环比较---
+      for (prevIndex; prevIndex <= prevR; prevIndex++) {
+        let prev = prevChildren[prevIndex]
+        let sameIndex;
+        // 优化
+        if (nextLength <= catchLength) { hostRemove(prev.el); continue }
+        // --- 找找看 ---
+        if (prev.key) {
+          // 这进行优化 先去映射找一下有的话不需要循环了
+          sameIndex = nextKeytoIndexMap.get(prev.key)
+        } else {
+          for (let j = nextIndex; j <= nextR; j++) {
+            // 发现相同则停止
+            if (isSameVnodeType(prev, nextChildren[j])) {
+              sameIndex = j
+              break;
+            }
+          }
+        }
+
+        // --- 处理结果 ---
+        if (sameIndex) {
+          // 最后找到了
+          catchLength ++ ;
+          patch(prev, nextChildren[sameIndex], el, parentComponent, null)
+        } else {
+          // 最后没找到
+          hostRemove(prev.el)
+        }
+      }
+
     }
   }
   // 删除子节点
