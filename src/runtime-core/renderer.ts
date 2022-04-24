@@ -184,7 +184,7 @@ export function createRenderer(options) {
     }
   }
   const isSameVnodeType = (nextVnode, prevVnode) => (nextVnode.type === prevVnode.type && nextVnode.key === prevVnode.key)
-  function patchKeyedChildren(el, nextChildren, prevChildren, parentComponent) {
+  function patchKeyedChildren(parentEl, nextChildren, prevChildren, parentComponent) {
     // 进行双端
     let i = 0;
     let nextR = nextChildren.length - 1;
@@ -192,16 +192,18 @@ export function createRenderer(options) {
     // 从前循环，必须不能越界
     while (i <= nextR && i <= prevR) {
       if (!isSameVnodeType(nextChildren[i], prevChildren[i])) {
+        console.log(nextChildren[i], prevChildren[i])
         break;
       }
+      patch(prevChildren[i], nextChildren[i], parentEl, parentComponent)
       i++
     }
     // 从后往前，必须不能比i小
     while (nextR >= i && prevR >= i) {
       if (!isSameVnodeType(nextChildren[nextR], prevChildren[prevR])) {
-
         break;
       }
+      patch(prevChildren[prevR], nextChildren[nextR], parentEl, parentComponent)
       nextR--
       prevR--
     }
@@ -212,14 +214,13 @@ export function createRenderer(options) {
     if (i <= nextR && i > prevR) {
       // 解决 新的还没用完，老的已经用完了。说明是插入形式的，两边全连着插入一部分
       while (i <= nextR) {
-        patch(null, nextChildren[i], el, parentComponent, prevChildren[prevR + 1]?.el)
+        patch(null, nextChildren[i], parentEl, parentComponent, prevChildren[prevR + 1]?.el)
         i++;
       }
     } else if (i <= prevR && i > nextR) {
       // 解决 老的没比较完，新的已经比较完了，说明是删除了几个点。
       // 删除
       // ABCD -> ABC  i === 3 , nextR 2 , prevR 3
-      console.log(1)
       // 新节点比旧节点少，需要删除
       while (i <= prevR) {
         hostRemove(prevChildren[i].el)
@@ -239,9 +240,15 @@ export function createRenderer(options) {
       // 优化 2. 通过 nextChildren 长度来提前结束搜寻
       let nextLength = nextR - nextIndex + 1;
       let catchLength = 0;
+      // ---初始化映射表 start---
+      const newIndexToOldIndexMap = new Array(nextLength);
+      newIndexToOldIndexMap.fill(0)
+      // ---初始化映射表 end ----
+      let removed = false;
+      let maxIndex = 0;
       // ---循环比较---
-      for (prevIndex; prevIndex <= prevR; prevIndex++) {
-        let prev = prevChildren[prevIndex]
+      for (let index = prevIndex; index <= prevR; index++) {
+        let prev = prevChildren[index]
         let sameIndex;
         // 优化
         if (nextLength <= catchLength) { hostRemove(prev.el); continue }
@@ -260,16 +267,52 @@ export function createRenderer(options) {
         }
 
         // --- 处理结果 ---
-        if (sameIndex) {
-          // 最后找到了
-          catchLength ++ ;
-          patch(prev, nextChildren[sameIndex], el, parentComponent, null)
-        } else {
-          // 最后没找到
+        if (sameIndex === undefined) {
           hostRemove(prev.el)
+        } else {
+          // 最后找到了
+          catchLength++;
+          maxIndex <= sameIndex ? maxIndex = sameIndex : (removed = true)
+          newIndexToOldIndexMap[sameIndex - nextIndex] = index + 1; // 收集映射
+          patch(prev, nextChildren[sameIndex], parentEl, parentComponent, null)
         }
       }
 
+
+      // 比较完以后开始排序啦。
+      // 求最长子序列
+      const increasingNewIndexSequence = removed ? getSequence(newIndexToOldIndexMap) : []
+      let j = increasingNewIndexSequence.length - 1;
+      // 开始循环
+      for (let index = nextLength - 1; index >= 0; index--) {
+        // 开始排序
+        if (newIndexToOldIndexMap[index] === 0) {
+          // 新增
+          console.log(nextChildren[index + nextIndex], nextChildren[index + nextIndex + 1])
+          patch(null, nextChildren[index + nextIndex], parentEl, parentComponent, nextChildren[index + nextIndex + 1]?.el)
+        } else if (removed) {
+          // 移动
+          // 优化，通过最长子序列进行一个比较，跳过大段要处理的节点
+          if (j < 0 || increasingNewIndexSequence[j] !== index) {
+            // 移动的话使用 insert 即可
+            hostInsert(nextChildren[index + nextIndex].el, parentEl, nextChildren[index + nextIndex + 1]?.el)
+          } else {
+            // 这里就是命中了  index 和 最长递增子序列的值
+            // 所以可以移动指针了
+            j--;
+          }
+
+
+          // if(j < 0 || !increasingNewIndexSequence[index]){
+          //   console.log('几次')
+          //   hostInsert(nextChildren[index + nextIndex].el, parentEl, nextChildren[index + nextIndex + 1]?.el)
+          // }else{
+          //   j--
+          // }
+        }
+
+        // increasingNewIndexSequence
+      }
     }
   }
   // 删除子节点
@@ -298,4 +341,47 @@ export function createRenderer(options) {
   return {
     createApp: createAppAPI(render)
   }
+}
+
+
+// 获取最长节点子序列
+function getSequence(arr: number[]): number[] {
+  const p = arr.slice();
+  const result = [0];
+  let i, j, u, v, c;
+  const len = arr.length;
+  for (i = 0; i < len; i++) {
+    const arrI = arr[i];
+    if (arrI !== 0) {
+      j = result[result.length - 1];
+      if (arr[j] < arrI) {
+        p[i] = j;
+        result.push(i);
+        continue;
+      }
+      u = 0;
+      v = result.length - 1;
+      while (u < v) {
+        c = (u + v) >> 1;
+        if (arr[result[c]] < arrI) {
+          u = c + 1;
+        } else {
+          v = c;
+        }
+      }
+      if (arrI < arr[result[u]]) {
+        if (u > 0) {
+          p[i] = result[u - 1];
+        }
+        result[u] = i;
+      }
+    }
+  }
+  u = result.length;
+  v = result[u - 1];
+  while (u-- > 0) {
+    result[u] = v;
+    v = p[v];
+  }
+  return result;
 }

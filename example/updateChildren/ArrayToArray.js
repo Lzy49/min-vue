@@ -146,6 +146,26 @@ function abcdopefToabcdef() {
     nextChildren
   }
 }
+// EABCFD -> ABCDEF  排序
+function eabcfdToabcdef() {
+  let prevChildren = createNodeList('EABCFD');
+  let nextChildren = createNodeList('ABCDEF');
+  nextChildren[4].props.class = "red"
+  return {
+    prevChildren,
+    nextChildren
+  }
+}
+// 新增，排序
+function eabcgfdjToabcdefghij() {
+  let prevChildren = createNodeList('EABCGFDJ');
+  let nextChildren = createNodeList('ABCDEFGHIJ');
+  nextChildren[4].props.class = "red"
+  return {
+    prevChildren,
+    nextChildren
+  }
+}
 
 const test = [
   abcTOabcd, // ABC -> ABCD 尾部 + 1
@@ -153,6 +173,8 @@ const test = [
   abcdTobcd, // ABCD -> BCD 首部 - 1
   abcdToabc, // ABCD -> ABC 尾部 - 1
   abcdopefToabcdef, //  ABCDOPEF -> ABCDEF 
+  eabcfdToabcdef,  // EABCFD -> ABCDEF 
+  eabcgfdjToabcdefghij,
 ]
 const {
   prevChildren,
