@@ -62,22 +62,47 @@ export function createRenderer(options) {
   // 初始化 组件
   function mountComponent(nextVnode: any, container: any, parentComponent) {
     /**
-    * 1. 创建组件实例
+    * 1. 创建组件实例 并挂载到 vnode 上
     * 2. 处理 props,slots, setup
     * 3. 处理 setup 返回值  
     */
-    const instance = createComponentInstance(nextVnode, parentComponent)
+    const instance = nextVnode.component = createComponentInstance(nextVnode, parentComponent)
     setupComponent(instance)
     setupRenderEffect(instance, container)
   }
   // 更新组件
   function updateComponent(prevVnode, nextVnode, container) {
-    console.log('更新呀')
+    const instance = nextVnode.component = prevVnode.component;
+    // 是否需要更新
+    if (shouldUpdateComponent(prevVnode, nextVnode)) {
+      // 需要更新
+      // 更新组件的流程是调用组件的 effect 所以在 初始化的时候就要将 effect 保存起来。
+      // 为了绑定 props 要给 instance 添加 next 属性
+      instance.next = nextVnode;
+      instance.update();
+    } else {
+      // 没有改变所以 修改vnode el  = 老的 el
+      nextVnode.el = prevVnode.el
+      // 没有改变所以 修改Vnode component = 老的 comonent
+      nextVnode.component = prevVnode.component
+      // 绑定 component vnode = 新的vnode 
+      instance.vnode = nextVnode;
+    }
+  }
+  function shouldUpdateComponent(prevVnode, nextVnode) {
+    const { props: prevProps } = prevVnode
+    const { props: nextProps } = nextVnode
+    for (let i in nextProps) {
+      if (nextProps[i] !== prevProps[i]) {
+        return true;
+      }
+    }
+    return false;
   }
   // 更新
   function setupRenderEffect(instance, container) {
-    // 绑定 effect 并区分更新与初始化
-    effect(() => {
+    // 绑定 effect 并区分更新与初始化 ，并把 effect 返回的 runner 绑定在 Instace 上。来保证下次更新props时调用。
+    instance.update = effect(() => {
       // init 初始化阶段
       if (!instance.isMounted) {
         // ShapeFlags 概念抽离
@@ -87,10 +112,17 @@ export function createRenderer(options) {
         // vnode -> element -> mountElement
         patch(null, subTree, container, instance)
         instance.vnode.el = subTree.el;
+        // instance.vnode.next = instance;
         instance.isMounted = true;
       } else {
         // updata 更新
-        const { proxy } = instance
+        // 为新组件更新新的 proxy
+        const { proxy, next: nextVnode, vnode: prevVnode } = instance
+        if (nextVnode) {
+          nextVnode.el = prevVnode.el;
+          updateComponentPreRender(instance, nextVnode)
+        }
+        // 为新组件更新 props
         const prevTree = instance.subTree; // 老 vnode
         // 返回 新的 vnode
         const subTree = instance.subTree = instance.render.call(proxy); // 新 vnode 
@@ -98,7 +130,11 @@ export function createRenderer(options) {
       }
     })
   }
-
+  function updateComponentPreRender(instance, nextVnode) {
+    instance.props = nextVnode.props;
+    instance.vnode = nextVnode;
+    instance.next = null;
+  }
   // 处理 element 类型 
   function processElement(prevVnode, nextVnode: any, container: any, parentComponent, anchor) {
     if (prevVnode) {
@@ -130,7 +166,6 @@ export function createRenderer(options) {
       // 处理数组
       mountChildren(children, el, parentComponent)
     }
-
     hostInsert(el, container, anchor)
   }
   // 更新 element 类型 
@@ -192,7 +227,6 @@ export function createRenderer(options) {
     // 从前循环，必须不能越界
     while (i <= nextR && i <= prevR) {
       if (!isSameVnodeType(nextChildren[i], prevChildren[i])) {
-        console.log(nextChildren[i], prevChildren[i])
         break;
       }
       patch(prevChildren[i], nextChildren[i], parentEl, parentComponent)

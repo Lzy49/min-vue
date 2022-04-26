@@ -9,7 +9,8 @@ export function createVnode(type, props?, children?) {
     props,
     children,
     key: props?.key,
-    shapeFlag: getShapeFlag(type)
+    shapeFlag: getShapeFlag(type),
+    component:null , // 挂载的组件
   }
   // 处理 node children
   if (typeof children === 'string' || typeof children === 'number') {

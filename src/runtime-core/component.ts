@@ -14,7 +14,9 @@ export function createComponentInstance(vnode, parent) {
     parent,
     isMounted: false, // 组件未初始化
     provide: parent?.provide || {},// 如果没有设置 provide ， provide 指向其父级的 provide 
-    emit: () => { }
+    emit: () => { },
+    update: null,// runner
+    next: null,
   }
   initEmit(component);
   return component;
