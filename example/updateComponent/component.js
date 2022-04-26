@@ -1,6 +1,8 @@
 import {
   h,
-  ref
+  ref,
+  getCurrentInstance,
+  nextTick,
 } from "../../lib/guide-min-vue.esm.js"
 const Child = {
   render() {
@@ -9,15 +11,23 @@ const Child = {
 }
 export const App = {
   setup() {
+    const app = getCurrentInstance()
     const childCount = ref(10);
     const count = ref(10)
     return {
       count,
       childCount,
       addChildCount: () => {
-        childCount.value++;
+        for (let i = 1; i < 100; i++) {
+          childCount.value++;
+        }
+        debugger
+        console.log(app)
+        nextTick(() => {
+          console.log(app)
+        })
       },
-      addCount:()=>{
+      addCount: () => {
         count.value++
       }
     }
@@ -28,12 +38,12 @@ export const App = {
       h(Child, {
         count: this.childCount
       }),
-      h('button',{
-        onClick:this.addChildCount
-      },'addChildCount'),
-      h('button',{
-        onClick:this.addCount
-      },'addCount')
+      h('button', {
+        onClick: this.addChildCount
+      }, 'addChildCount'),
+      h('button', {
+        onClick: this.addCount
+      }, 'addCount')
     ])
   }
 }

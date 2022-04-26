@@ -4,6 +4,7 @@ import { Text, Fragment } from './createVnode'
 import { createAppAPI } from './createApp'
 import { effect } from "../reactivity/effect"
 import { EMPTY_OBJECT } from "../shared"
+import { queueJobs } from './scheduler'
 // 接收一个 渲染工具
 export function createRenderer(options) {
   // 解构 api
@@ -53,7 +54,7 @@ export function createRenderer(options) {
   function processComponent(prevVnode, nextVnode: any, container: any, parentComponent) {
     if (prevVnode) {
       // 更新流程
-      updateComponent(prevVnode, nextVnode, container)
+      updateComponent(prevVnode, nextVnode)
     } else {
       // 初始化流程
       mountComponent(nextVnode, container, parentComponent)
@@ -71,7 +72,7 @@ export function createRenderer(options) {
     setupRenderEffect(instance, container)
   }
   // 更新组件
-  function updateComponent(prevVnode, nextVnode, container) {
+  function updateComponent(prevVnode, nextVnode) {
     const instance = nextVnode.component = prevVnode.component;
     // 是否需要更新
     if (shouldUpdateComponent(prevVnode, nextVnode)) {
@@ -127,6 +128,10 @@ export function createRenderer(options) {
         // 返回 新的 vnode
         const subTree = instance.subTree = instance.render.call(proxy); // 新 vnode 
         patch(prevTree, subTree, container, instance)
+      }
+    }, {
+      scheduler: () => {
+        queueJobs(instance.update)
       }
     })
   }
