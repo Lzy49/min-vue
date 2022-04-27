@@ -23,6 +23,9 @@ function paseChildren(context): any {
       node = paseElement(context)
     }
   }
+  if (!node) {
+    node = paseText(context)
+  }
   nodes.push(node)
   return nodes
 }
@@ -44,10 +47,10 @@ function paseInterpolation(context) {
   advanceBy(context, startDelimiter.length)
   const endIndex = context.source.indexOf(endDelimiter);
   // 截取 content
-  const rawContent = context.source.slice(0, endIndex);
+  const rawContent = paseTextData(context, endIndex);
   const content = rawContent.trim();
   // 再推到结束分隔符后
-  advanceBy(context, endIndex + endDelimiter.length)
+  advanceBy(context, endDelimiter.length)
   // 返回
   return {
     type: NODE_TYPE.INTERPOLATION,
@@ -69,15 +72,33 @@ function paseElement(context: any): any {
   parseTag(context, TagType.END);
   return element
 }
+
 function parseTag(context, type: TagType) {
   const result = /^<\/?([a-z]*)/i.exec(context.source)
-  const tag = result[1]
   // 推推 source 
   advanceBy(context, result[0].length + 1)
   if (type === TagType.END) return;
+  const tag = result[1]
   return {
     type: NODE_TYPE.ELEMENT,
     tag
   }
+}
+
+function paseText(context: any) {
+  // 1. 取出值
+  const content = paseTextData(context, context.source.length);
+  // 2. 推进
+  return {
+    type: NODE_TYPE.TEXT,
+    content
+  }
+}
+
+function paseTextData(context: any, length) {
+  const content = context.source.slice(0, length);
+  // 获取结束
+  advanceBy(context, length);
+  return content;
 }
 
