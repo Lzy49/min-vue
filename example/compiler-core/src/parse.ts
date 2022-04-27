@@ -3,6 +3,10 @@ const delimiter = [
   "{{",
   "}}"
 ]
+const enum TagType {
+  START,
+  END,
+}
 export const baseParse = (template: string) => {
   const context = createParserContext(template)
   return createRoot(paseChildren(context))
@@ -10,10 +14,16 @@ export const baseParse = (template: string) => {
 
 function paseChildren(context): any {
   const nodes = [];
-  // context
-  if(context.source.startsWith(delimiter[0])){
-    nodes.push(paseInterpolation(context))
+  let node;
+  const source = context.source
+  if (source.startsWith(delimiter[0])) {
+    node = paseInterpolation(context)
+  } else if (source.startsWith('<')) {
+    if (/^<[a-z]*/.test(source)) {
+      node = paseElement(context)
+    }
   }
+  nodes.push(node)
   return nodes
 }
 function createParserContext(template: string): { source: string } {
@@ -50,5 +60,24 @@ function paseInterpolation(context) {
 
 function advanceBy(context: any, index: number) {
   context.source = context.source.slice(index);
+}
+
+function paseElement(context: any): any {
+  // context.source
+  // 首先要解析出 tag
+  let element = parseTag(context, TagType.START);
+  parseTag(context, TagType.END);
+  return element
+}
+function parseTag(context, type: TagType) {
+  const result = /^<\/?([a-z]*)/i.exec(context.source)
+  const tag = result[1]
+  // 推推 source 
+  advanceBy(context, result[0].length + 1)
+  if (type === TagType.END) return;
+  return {
+    type: NODE_TYPE.ELEMENT,
+    tag
+  }
 }
 
