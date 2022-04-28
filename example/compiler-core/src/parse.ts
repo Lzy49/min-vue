@@ -9,25 +9,43 @@ const enum TagType {
 }
 export const baseParse = (template: string) => {
   const context = createParserContext(template)
-  return createRoot(paseChildren(context))
+  let ancestor = [];
+  return createRoot(paseChildren(context, ancestor))
 }
 
-function paseChildren(context): any {
+function paseChildren(context, ancestor): any {
   const nodes = [];
-  let node;
-  const source = context.source
-  if (source.startsWith(delimiter[0])) {
-    node = paseInterpolation(context)
-  } else if (source.startsWith('<')) {
-    if (/^<[a-z]*/.test(source)) {
-      node = paseElement(context)
+  while (isEnd(context, ancestor)) {
+    let node;
+    const source = context.source
+    if (source.startsWith(delimiter[0])) {
+      node = paseInterpolation(context)
+    } else if (source.startsWith('<')) {
+      if (/^<[a-z]*/.test(source)) {
+        node = paseElement(context, ancestor)
+      }
+    }
+    if (!node) {
+      node = paseText(context)
+    }
+    nodes.push(node)
+  }
+  return nodes
+}
+function isEnd(context, ancestor) {
+  if (context.source.length <= 0) {
+    return false;
+  }
+  for (let key = ancestor.length - 1; key >= 0; key--) {
+    const item = ancestor[key]
+    if (context.source.startsWith(`</${item}>`)) {
+      if (key !== ancestor.length - 1) {
+        throw new Error('span 没有闭合标签')
+      }
+      return false
     }
   }
-  if (!node) {
-    node = paseText(context)
-  }
-  nodes.push(node)
-  return nodes
+  return true
 }
 function createParserContext(template: string): { source: string } {
   return {
@@ -65,10 +83,18 @@ function advanceBy(context: any, index: number) {
   context.source = context.source.slice(index);
 }
 
-function paseElement(context: any): any {
+// 处理因为 缺少闭合报错
+// 就是 确定在什么范围内，缺少
+// 解决：收集每一层 element 的范围
+function paseElement(context: any, ancestor): any {
   // context.source
   // 首先要解析出 tag
-  let element = parseTag(context, TagType.START);
+  let element: any = parseTag(context, TagType.START);
+  ancestor.push(element.tag)
+  // 处理子节点
+  // element.tag
+  element.children = paseChildren(context, ancestor)
+  ancestor.pop(element.tag)
   parseTag(context, TagType.END);
   return element
 }
@@ -86,8 +112,17 @@ function parseTag(context, type: TagType) {
 }
 
 function paseText(context: any) {
+  const source = context.source
+  const endTags = [delimiter[0], '<']
+  let endIndex = context.source.length;
+  for (let item of endTags) {
+    const index = source.indexOf(item);
+    if (index !== -1 && source.indexOf(item) < endIndex) {
+      endIndex = source.indexOf(item)
+    }
+  }
   // 1. 取出值
-  const content = paseTextData(context, context.source.length);
+  const content = paseTextData(context, endIndex);
   // 2. 推进
   return {
     type: NODE_TYPE.TEXT,
