@@ -1,3 +1,6 @@
+import { NODE_TYPE } from "./ast";
+import { TO_DISPLAY_STRING } from "./runtimeHelpers";
+
 export function transform(root, options = {}) {
   const context = createTransfromContext(root, options)
 
@@ -5,15 +8,28 @@ export function transform(root, options = {}) {
   // 2. 为节点 content 增加 'min-vue'
   traverseNode(root, context)
   createRootCodegen(root, context);
+  // 将 收集到的 需要增加的 vue 依赖推到 ast 上给 codegen 处理
+  root.helpers.push(...context.helpers.values())
 }
-
+// 利用插件处理每一点
 function traverseNode(node: any, context) {
   // 变化点 抽离为插件
   context.nodeTransforms.forEach(fn => {
     fn(node)
   })
-  // 稳定点抽离
-  traverseChildren(node, context);
+
+  // 稳定点 处理子节点
+  // 根据不同类型处理节点
+  switch (node.type) {
+    case NODE_TYPE.INTERPOLATION:
+      // 当 template 中有插值行，则需要添加 Vue TO_DISPLAY_STRING 依赖。
+      context.helper(TO_DISPLAY_STRING);
+      break;
+    case NODE_TYPE.ROOT:
+    case NODE_TYPE.ELEMENT:
+      traverseChildren(node, context);
+      break;
+  }
 }
 function traverseChildren(node: any, context) {
   const children = node.children;
@@ -23,10 +39,16 @@ function traverseChildren(node: any, context) {
 }
 
 function createTransfromContext(root, options) {
-  return {
+  // 
+  const context = {
     root,
-    nodeTransforms: options.nodeTransforms || []
-  }
+    nodeTransforms: options.nodeTransforms || [],
+    helpers: new Set(),
+    helper: (helper) => {
+      context.helpers.add(helper)
+    }
+  };
+  return context
 }
 
 function createRootCodegen(root: any, context: { root: any; nodeTransforms: any; }) {

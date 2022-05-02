@@ -54,7 +54,9 @@ function createParserContext(template: string): { source: string } {
 }
 function createRoot(children) {
   return {
-    children
+    children,
+    type: NODE_TYPE.ROOT,
+    helpers: []
   }
 }
 
