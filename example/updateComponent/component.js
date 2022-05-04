@@ -21,7 +21,6 @@ export const App = {
         for (let i = 1; i < 100; i++) {
           childCount.value++;
         }
-        debugger
         console.log(app)
         nextTick(() => {
           console.log(app)

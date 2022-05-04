@@ -14,9 +14,9 @@ export function transform(root, options = {}) {
 // 利用插件处理每一点
 function traverseNode(node: any, context) {
   // 变化点 抽离为插件
-  const exitFns = []
+  const exitFns:any = []
   context.nodeTransforms.forEach(fn => {
-    const exitFn = fn(node,context) 
+    const exitFn:any = fn(node,context) 
     exitFn && exitFns.push(exitFn)
   })
 

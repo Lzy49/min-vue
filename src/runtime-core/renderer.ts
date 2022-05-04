@@ -109,7 +109,7 @@ export function createRenderer(options) {
         // ShapeFlags 概念抽离
         const { proxy } = instance
         // 执行 组件 render 函数 返回最后得到 vnode 
-        const subTree = instance.subTree = instance.render.call(proxy);
+        const subTree = instance.subTree = instance.render.call(proxy, proxy);
         // vnode -> element -> mountElement
         patch(null, subTree, container, instance)
         instance.vnode.el = subTree.el;
@@ -126,7 +126,7 @@ export function createRenderer(options) {
         // 为新组件更新 props
         const prevTree = instance.subTree; // 老 vnode
         // 返回 新的 vnode
-        const subTree = instance.subTree = instance.render.call(proxy); // 新 vnode 
+        const subTree = instance.subTree = instance.render.call(proxy, proxy); // 新 vnode 
         patch(prevTree, subTree, container, instance)
       }
     }, {

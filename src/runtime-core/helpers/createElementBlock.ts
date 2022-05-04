@@ -1,0 +1,1 @@
+export { createVnode as createElementBlock } from '../createVnode'

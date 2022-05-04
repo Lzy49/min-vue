@@ -66,9 +66,13 @@ function handlerSetupResult(setupResult, instance) {
 // 处理 绑定实例render
 function finishSetupComponent(instance) {
   const component = instance.type;
-  if (component.render) {
-    instance.render = component.render // 如果 option 中传入了 render 就使用 option 中的 render.
+  // 优先使用 render 
+  if (!component.render) {
+    // 次使用 template
+    const template = component.template || '';
+    component.render = compile(template);
   }
+  instance.render = component.render // 如果 option 中传入了 render 就使用 option 中的 render.
 }
 
 let currentInstance = null;
@@ -82,4 +86,10 @@ function setCurrentInstance(instance) {
 
 function removeCurrentInstance() {
   currentInstance = null
+}
+
+
+let compile;
+export function registerRuntimeCompiler(_compile) {
+  compile = _compile;
 }

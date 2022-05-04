@@ -14,7 +14,7 @@ export const baseParse = (template: string) => {
 }
 
 function paseChildren(context, ancestor): any {
-  const nodes = [];
+  const nodes = <any[]>[];
   while (isEnd(context, ancestor)) {
     let node;
     const source = context.source
@@ -102,7 +102,7 @@ function paseElement(context: any, ancestor): any {
 }
 
 function parseTag(context, type: TagType) {
-  const result = /^<\/?([a-z]*)/i.exec(context.source)
+  const result: any = /^<\/?([a-z]*)/i.exec(context.source)
   // 推推 source 
   advanceBy(context, result[0].length + 1)
   if (type === TagType.END) return;
