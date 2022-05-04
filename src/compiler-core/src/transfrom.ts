@@ -1,5 +1,5 @@
 import { NODE_TYPE } from "./ast";
-import { TO_DISPLAY_STRING } from "./runtimeHelpers";
+import { TO_DISPLAY_STRING, CREATE_ELEMENT_BLOCK } from "./runtimeHelpers";
 
 export function transform(root, options = {}) {
   const context = createTransfromContext(root, options)
@@ -14,8 +14,10 @@ export function transform(root, options = {}) {
 // 利用插件处理每一点
 function traverseNode(node: any, context) {
   // 变化点 抽离为插件
+  const exitFns = []
   context.nodeTransforms.forEach(fn => {
-    fn(node)
+    const exitFn = fn(node,context) 
+    exitFn && exitFns.push(exitFn)
   })
 
   // 稳定点 处理子节点
@@ -25,11 +27,12 @@ function traverseNode(node: any, context) {
       // 当 template 中有插值行，则需要添加 Vue TO_DISPLAY_STRING 依赖。
       context.helper(TO_DISPLAY_STRING);
       break;
-    case NODE_TYPE.ROOT:
     case NODE_TYPE.ELEMENT:
+    case NODE_TYPE.ROOT:
       traverseChildren(node, context);
       break;
   }
+  exitFns.forEach(item=>item())
 }
 function traverseChildren(node: any, context) {
   const children = node.children;
@@ -54,5 +57,12 @@ function createTransfromContext(root, options) {
 function createRootCodegen(root: any, context: { root: any; nodeTransforms: any; }) {
   const child = root.children[0];
   root.codegenNode = child
+
+  if (child.type === NODE_TYPE.ELEMENT && child.codegenNode) {
+    const codegenNode = child.codegenNode;
+    root.codegenNode = codegenNode;
+  } else {
+    root.codegenNode = child;
+  }
 }
 
